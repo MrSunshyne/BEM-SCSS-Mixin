@@ -1,0 +1,70 @@
+$elementSeparator: "__";
+$modifierSeparator: "--";
+ 
+@mixin b($block) {
+   .#{$block} {
+       @content; 
+   }
+}
+
+@mixin e($element) {
+    @at-root {
+        #{&}#{$elementSeparator+$element} {
+            @content;
+        }
+    }
+}
+
+@mixin m($modifier) {
+    @at-root {
+        #{&}#{$modifierSeparator+$modifier} {
+            @content;
+        }
+    }
+}
+
+@function selectorToString($selector) {
+    $selector: inspect($selector); //cast to string
+    $selector: str-slice($selector, 2, -2); //remove bracket
+    @return $selector;
+}
+
+@function getBlock($selector) {
+    $selector: selectorToString($selector);
+    $modifierStart: str-index($selector, $modifierSeparator) - 1;
+    @return str-slice($selector,0,$modifierStart); 
+}
+
+@function containsModifier($selector) {
+    $selector: selectorToString($selector);
+    @if str-index($selector, $modifierSeparator) {
+        @return true;
+    }
+    @else { 
+        @return false;
+    }
+}
+
+@mixin e($element) {
+    $selector: &;
+    $block: getBlock($selector);
+    @if containsModifier($selector) {
+        @at-root {
+            #{$selector} {
+                #{$block+$elementSeparator+$element} {
+                    @content;
+                }
+            }
+       }
+    }
+    @else {
+        @at-root {
+            #{$selector+$elementSeparator+$element} {
+                @content;
+            }
+        }
+    }
+}
+
+
+// Originally Authored by [Mark Mintel](https://medium.com/@marcmintel/pushing-bem-to-the-next-level-with-sass-3-4-5239d2371321)
